@@ -102,7 +102,7 @@ export class AuthService {
   generateToken(payload: AuthPayload): string {
     return jwt.sign(payload, env.JWT_SECRET, {
       expiresIn: env.JWT_TTL,
-    });
+    } as jwt.SignOptions);
   }
 
   private toUserDTO(user: {

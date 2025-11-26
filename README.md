@@ -328,7 +328,7 @@ pnpm test
 pnpm test:watch
 
 # Run with coverage
-pnpm test -- --coverage
+pnpm test:coverage
 ```
 
 ### Test Coverage
@@ -401,6 +401,7 @@ CORS_ORIGIN=https://your-frontend-domain.com
 | `pnpm build`           | Build for production                     |
 | `pnpm start`           | Start production server                  |
 | `pnpm test`            | Run tests                                |
+| `pnpm test:coverage`   | Run tests with coverage report           |
 | `pnpm lint`            | Run ESLint                               |
 | `pnpm format`          | Format code with Prettier                |
 | `pnpm prisma:generate` | Generate Prisma Client                   |
