@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { authRouter } from '../modules/auth/auth.routes';
 import { usersRouter } from '../modules/users/users.routes';
 import { postsRouter } from '../modules/posts/posts.routes';
@@ -7,7 +8,7 @@ import { validate } from '../middleware/validation';
 import { getUserPostsSchema, getFeedSchema } from '../modules/posts/posts.validation';
 import { postsController } from '../modules/posts/posts.controller';
 
-export const router = Router();
+export const router: ExpressRouter = Router();
 
 router.use('/auth', authRouter);
 router.use('/users', usersRouter);

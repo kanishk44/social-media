@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { usersController } from './users.controller';
 import { validate } from '../../middleware/validation';
 import { authenticate } from '../../middleware/auth';
@@ -10,7 +11,7 @@ import {
   getFollowingSchema,
 } from './users.validation';
 
-export const usersRouter = Router();
+export const usersRouter: ExpressRouter = Router();
 
 usersRouter.get('/:id', validate(getUserSchema), usersController.getUser.bind(usersController));
 

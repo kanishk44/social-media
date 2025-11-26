@@ -356,8 +356,17 @@ pnpm test:coverage
 # Build image
 docker build -t social-media-backend .
 
-# Run container
-docker run -p 4000:4000 --env-file .env social-media-backend
+# Run container (map host port 4000 to container port from .env)
+docker run -d -p 4000:4001 --name social-media --env-file .env social-media-backend
+
+# Check logs
+docker logs social-media
+
+# Test health check
+curl http://localhost:4000/healthz
+
+# Stop and remove
+docker stop social-media && docker rm social-media
 
 # Or use Docker Compose
 docker-compose up

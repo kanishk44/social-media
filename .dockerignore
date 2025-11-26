@@ -7,7 +7,6 @@ npm-debug.log*
 pnpm-debug.log*
 .git
 .gitignore
-README.md
 .vscode
 .idea
 *.swp
@@ -21,4 +20,7 @@ tests
 jest.config.js
 .eslintrc.json
 .prettierrc.json
-
+.husky
+README.md
+Backend Engineer Assignment.md
+postman_collection.json

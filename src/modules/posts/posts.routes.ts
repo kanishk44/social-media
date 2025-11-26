@@ -1,16 +1,16 @@
 import { Router } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { postsController } from './posts.controller';
 import { validate } from '../../middleware/validation';
 import { authenticate } from '../../middleware/auth';
 import {
   createPostSchema,
   getPostSchema,
-  getUserPostsSchema,
   getFeedSchema,
   getUploadUrlSchema,
 } from './posts.validation';
 
-export const postsRouter = Router();
+export const postsRouter: ExpressRouter = Router();
 
 postsRouter.post(
   '/',
