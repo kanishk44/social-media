@@ -603,30 +603,6 @@ curl -X POST http://localhost:4000/api/v1/auth/login \
 # Use returned token for authenticated requests
 ```
 
-## 🎯 Assignment Requirements Checklist
-
-- ✅ TypeScript with strict mode
-- ✅ Express.js REST API with versioning (`/api/v1`)
-- ✅ PostgreSQL 15 with Prisma ORM
-- ✅ Supabase for database and storage
-- ✅ JWT authentication (access token only)
-- ✅ User registration and login
-- ✅ Follow/unfollow functionality
-- ✅ Followers and following lists with pagination
-- ✅ Create posts with optional media
-- ✅ Retrieve user posts
-- ✅ Personalized feed
-- ✅ Security (helmet, CORS, rate limiting, Zod validation)
-- ✅ Unit tests with Jest
-- ✅ ESLint + Prettier
-- ✅ pnpm package manager
-- ✅ Clean architecture and data modeling
-- ✅ Comprehensive documentation
-- ✅ Postman collection
-- ✅ Docker support
-- ✅ CI/CD pipeline
-- ✅ Deployment ready (EC2 scripts)
-
 ## 📄 License
 
 MIT
