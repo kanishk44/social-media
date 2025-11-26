@@ -350,7 +350,9 @@ pnpm test:coverage
 
 ## 🚢 Deployment
 
-### Docker
+### Option 1: Docker (Recommended)
+
+**Local Docker:**
 
 ```bash
 # Build image
@@ -372,20 +374,83 @@ docker stop social-media && docker rm social-media
 docker-compose up
 ```
 
-### AWS EC2
+**Docker on EC2:**
+
+1. **Prepare EC2 instance:**
+
+   ```bash
+   # SSH into EC2
+   ssh -i your-key.pem ubuntu@your-ec2-ip
+
+   # Install Docker
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   sudo usermod -aG docker ubuntu
+
+   # Log out and back in
+   exit
+   ```
+
+2. **Deploy application:**
+
+   ```bash
+   # Clone and setup
+   git clone <your-repo-url>
+   cd social-media-backend
+   nano .env  # Add production environment variables
+
+   # Build and run
+   docker build -t social-media-backend .
+   docker run -d -p 80:8080 --name social-media --restart unless-stopped --env-file .env social-media-backend
+
+   # Verify
+   curl http://localhost/healthz
+   ```
+
+3. **Configure Security Group:** Allow ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
+
+4. **Optional - Setup Nginx + SSL:**
+
+   ```bash
+   # Install Nginx
+   sudo apt install -y nginx certbot python3-certbot-nginx
+
+   # Configure reverse proxy (edit /etc/nginx/sites-available/social-media)
+   # Get SSL certificate
+   sudo certbot --nginx -d your-domain.com
+   ```
+
+### Option 2: PM2 Deployment
+
+Use the automated deployment script:
 
 ```bash
-# Use the deployment script
+# From your local machine
 chmod +x scripts/deploy-ec2.sh
-./scripts/deploy-ec2.sh ubuntu@your-ec2-ip
+./scripts/deploy-ec2.sh ubuntu@your-ec2-ip ~/.ssh/your-key.pem
+```
 
-# Or manually:
-# 1. Install Node.js 18+ and pnpm on EC2
-# 2. Clone repository
-# 3. Install dependencies: pnpm install
-# 4. Build: pnpm build
-# 5. Run migrations via Supabase SQL Editor
-# 6. Start with PM2: pm2 start dist/server.js
+The script will:
+
+- Build your application locally
+- Create deployment package
+- Upload to EC2
+- Install Node.js, pnpm, and PM2 (if not present)
+- Setup and start the application
+- Configure PM2 to start on boot
+
+**After deployment, remember to:**
+
+1. SSH to EC2 and edit `.env` with production settings
+2. Restart: `pm2 restart social-media-backend`
+
+**PM2 Commands:**
+
+```bash
+pm2 status                          # Check status
+pm2 logs social-media-backend       # View logs
+pm2 restart social-media-backend    # Restart
+pm2 monit                           # Monitor
 ```
 
 ### Environment Variables for Production
@@ -395,11 +460,40 @@ Update `.env` for production:
 ```env
 NODE_ENV=production
 PORT=8080
-DATABASE_URL=<production-supabase-url>
+DATABASE_URL=<production-supabase-url>?pgbouncer=true
 JWT_SECRET=<strong-random-secret>
 SUPABASE_URL=<production-supabase-url>
 SUPABASE_SERVICE_ROLE_KEY=<production-key>
 CORS_ORIGIN=https://your-frontend-domain.com
+```
+
+### Production Security Checklist
+
+- [ ] Change `JWT_SECRET` to a strong random value
+- [ ] Set `NODE_ENV=production`
+- [ ] Use HTTPS (SSL certificate)
+- [ ] Configure firewall (only allow necessary ports)
+- [ ] Use strong database password
+- [ ] Keep `SUPABASE_SERVICE_ROLE_KEY` secret
+- [ ] Configure CORS for your frontend domain only
+- [ ] Set up automated backups
+- [ ] Enable monitoring and logging
+
+### Monitoring
+
+**Health Check:**
+
+```bash
+curl http://your-ec2-ip/healthz
+# Expected: {"status":"ok","timestamp":"..."}
+```
+
+**Docker Stats:**
+
+```bash
+docker logs social-media           # View logs
+docker logs -f social-media        # Follow logs
+docker stats social-media          # Resource usage
 ```
 
 ## 📝 Available Scripts
