@@ -1,33 +1,46 @@
 # Social Media Backend
 
-A minimal social media backend with user graph, posting, and timelines built with TypeScript, Express, Prisma, and PostgreSQL.
+A production-ready social media backend with user graph, posting, and timelines built with TypeScript, Express, Prisma, and PostgreSQL.
 
 ## 🚀 Features
 
-- **User Management**: Registration, login with JWT authentication
-- **Social Graph**: Follow/unfollow users, view followers and following lists
-- **Posts**: Create text posts with optional media, view user posts and personalized feed
-- **Media Upload**: Integrated with Supabase Storage for image and video uploads
-- **Security**: Rate limiting, CORS, helmet, request validation with Zod
-- **Testing**: Unit tests for core services using Jest
+### Core Functionality
+
+- **User Authentication**: JWT-based registration and login
+- **Social Graph**: Follow/unfollow users, view followers and following lists with pagination
+- **Posts**: Create text posts with optional media uploads
+- **Media Storage**: Integrated with Supabase Storage for images and videos
+- **Personalized Feed**: View posts from yourself and followed users, sorted by newest first
+- **Security**: Rate limiting, CORS, helmet, password hashing, request validation
+
+### Technical Features
+
+- Clean modular architecture
+- Comprehensive error handling
+- Request validation with Zod
+- Unit tests with Jest
+- Logging with Pino
+- TypeScript strict mode
+- Docker support
+- CI/CD with GitHub Actions
 
 ## 📋 Tech Stack
 
-- **Language**: TypeScript (Node 18+)
-- **Framework**: Express.js
-- **Database**: PostgreSQL 15 (Supabase)
-- **ORM**: Prisma
-- **Authentication**: JWT (access token only)
-- **Storage**: Supabase Storage
-- **Validation**: Zod
-- **Testing**: Jest
-- **Logging**: Pino
-- **Security**: Helmet, CORS, Express Rate Limit
-- **Package Manager**: pnpm
+| Category            | Technology                       |
+| ------------------- | -------------------------------- |
+| **Language**        | TypeScript (Node.js 18+)         |
+| **Framework**       | Express.js                       |
+| **Database**        | PostgreSQL 15 (Supabase)         |
+| **ORM**             | Prisma                           |
+| **Authentication**  | JWT (access token, 15min expiry) |
+| **Storage**         | Supabase Storage                 |
+| **Validation**      | Zod                              |
+| **Testing**         | Jest                             |
+| **Logging**         | Pino                             |
+| **Security**        | Helmet, CORS, Express Rate Limit |
+| **Package Manager** | pnpm                             |
 
-## 📐 Architecture & Design Decisions
-
-### Database Schema
+## 📐 Database Schema
 
 ```
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
@@ -42,108 +55,140 @@ A minimal social media backend with user graph, posting, and timelines built wit
 └─────────────────┘                                      └─────────────────┘
 ```
 
-### Key Design Choices
+### Key Design Decisions
 
-1. **JWT Access Token Only**: For simplicity, only short-lived access tokens (15m) are used. In production, refresh tokens would be added.
+1. **JWT Access Tokens Only**: Short-lived tokens (15min) for simplicity. Production would add refresh tokens.
 
-2. **Offset Pagination**: Simple offset-based pagination is used instead of cursor-based for easier implementation. Trade-off: less efficient for large datasets.
+2. **Offset Pagination**: Simple offset/limit pagination for all list endpoints. Trade-off: less efficient for very large datasets vs. cursor-based pagination.
 
-3. **Supabase for Media**: Using Supabase Storage instead of AWS S3 for easier setup and integration. Files are stored with pre-signed URLs.
+3. **Supabase for Everything**: Using Supabase for both PostgreSQL database and file storage for unified cloud infrastructure.
 
-4. **Follow Model**: Self-referential many-to-many relationship with a composite unique constraint to prevent duplicate follows.
+4. **Self-Referential Follow Model**: Many-to-many relationship with composite unique constraint preventing duplicate follows.
 
-5. **Feed Generation**: Feed queries fetch posts from the user + all followed users in a single query. For scale, this would need optimization (e.g., caching, pre-computed feeds).
-
-6. **Error Handling**: Centralized error handler with custom HttpError class for consistent API responses.
-
-7. **Security**: 
-   - Passwords hashed with bcrypt (12 rounds)
-   - Rate limiting (100 req/15min per IP)
-   - Request validation with Zod
-   - Body size limits (10MB)
+5. **Feed Algorithm**: Simple chronological feed from user + following. Scalable implementation would use pre-computed feeds or caching.
 
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 18 or higher
 - pnpm (`npm install -g pnpm`)
-- PostgreSQL 15 (or Supabase account)
-- Supabase account (optional, for media uploads)
+- Supabase account (free tier works)
 
-### Local Development Setup
+### 1. Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd social-media-backend
-   ```
+```bash
+# Clone the repository
+git clone <repository-url>
+cd social-media-backend
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+# Install dependencies
+pnpm install
+```
 
-3. **Setup environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Update `.env` with your configuration:
-   ```env
-   NODE_ENV=development
-   PORT=8080
-   DATABASE_URL=postgresql://user:password@localhost:5432/social_media
-   JWT_SECRET=your-super-secret-jwt-key-change-me
-   JWT_TTL=15m
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_ANON_KEY=your-anon-key
-   SUPABASE_BUCKET=media
-   CORS_ORIGIN=http://localhost:5173
-   ```
+### 2. Environment Setup
 
-4. **Setup database with Prisma**
-   ```bash
-   # Generate Prisma Client
-   pnpm prisma:generate
-   
-   # Run migrations
-   pnpm prisma:migrate
-   
-   # (Optional) Seed database with test data
-   pnpm prisma:seed
-   ```
+Create a `.env` file in the root directory:
 
-5. **Run the development server**
-   ```bash
-   pnpm dev
-   ```
-   
-   Server will start at `http://localhost:8080`
+```env
+# Application
+NODE_ENV=development
+PORT=4000
 
-6. **Run tests**
-   ```bash
-   pnpm test
-   ```
+# Database (Supabase PostgreSQL)
+DATABASE_URL=postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-1-us-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true&connection_limit=1
 
-### Supabase Setup
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this
+JWT_TTL=15m
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Navigate to Settings > Database and copy the connection string
-3. Navigate to Storage and create a new bucket named `media`
-4. Set the bucket to public or configure access policies
-5. Copy the project URL and anon key to your `.env` file
+# Supabase Storage (for media uploads)
+SUPABASE_URL=https://[PROJECT-REF].supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_BUCKET=media
+
+# CORS
+CORS_ORIGIN=http://localhost:5173
+```
+
+### 3. Supabase Setup
+
+#### Get Database Connection String:
+
+1. Go to [Supabase Dashboard](https://app.supabase.com)
+2. Select your project → Settings → Database
+3. Copy the **Session pooler** connection string (IPv4 compatible)
+4. Add `?pgbouncer=true&connection_limit=1` to the URL
+
+#### Setup Storage:
+
+1. In Supabase Dashboard → Storage
+2. Create a new bucket named `media`
+3. Set it to **public**
+
+#### Get API Keys:
+
+1. Go to Settings → API
+2. Copy **Project URL** → use as `SUPABASE_URL`
+3. Copy **service_role key** → use as `SUPABASE_SERVICE_ROLE_KEY`
+   - ⚠️ **Important**: Use service_role (not anon) for signed upload URLs
+
+### 4. Database Migration
+
+Since Supabase's session pooler doesn't support direct migrations, use the SQL Editor:
+
+```bash
+# Generate Prisma Client
+pnpm prisma generate
+```
+
+Then run the migration SQL manually:
+
+1. Open `prisma/migrations/00_initial_schema.sql`
+2. Copy the entire SQL content
+3. In Supabase Dashboard → SQL Editor → New Query
+4. Paste and execute the SQL
+
+Verify tables were created: Database → Tables
+
+### 5. Seed Database (Optional)
+
+```bash
+pnpm prisma:seed
+```
+
+This creates test users:
+
+- **Alice**: `alice@example.com` / `alice` / `password123`
+- **Bob**: `bob@example.com` / `bob` / `password123`
+- **Charlie**: `charlie@example.com` / `charlie` / `password123`
+
+### 6. Start Development Server
+
+```bash
+pnpm dev
+```
+
+Server will start at `http://localhost:4000`
+
+Test health check:
+
+```bash
+curl http://localhost:4000/healthz
+```
 
 ## 📡 API Documentation
 
 ### Base URL
+
 ```
-http://localhost:8080/api/v1
+http://localhost:4000/api/v1
 ```
 
 ### Authentication
 
-Most endpoints require authentication via JWT token in the Authorization header:
+Most endpoints require JWT token in the Authorization header:
+
 ```
 Authorization: Bearer <access_token>
 ```
@@ -151,48 +196,95 @@ Authorization: Bearer <access_token>
 ### Endpoints
 
 #### Auth
-- `POST /auth/register` - Register a new user
-  ```json
-  {
-    "email": "user@example.com",
-    "handle": "username",
-    "name": "User Name",
-    "password": "password123"
-  }
-  ```
 
-- `POST /auth/login` - Login with email/handle and password
-  ```json
-  {
-    "emailOrHandle": "user@example.com",
-    "password": "password123"
-  }
-  ```
+| Method | Endpoint         | Description       | Auth Required |
+| ------ | ---------------- | ----------------- | ------------- |
+| POST   | `/auth/register` | Register new user | No            |
+| POST   | `/auth/login`    | Login user        | No            |
 
 #### Users
-- `GET /users/:id` - Get user profile
-- `POST /users/:id/follow` - Follow a user (auth required)
-- `DELETE /users/:id/follow` - Unfollow a user (auth required)
-- `GET /users/:id/followers?offset=0&limit=20` - Get user's followers
-- `GET /users/:id/following?offset=0&limit=20` - Get users followed by user
+
+| Method | Endpoint               | Description                | Auth Required |
+| ------ | ---------------------- | -------------------------- | ------------- |
+| GET    | `/users/:id`           | Get user profile           | No            |
+| POST   | `/users/:id/follow`    | Follow a user              | Yes           |
+| DELETE | `/users/:id/follow`    | Unfollow a user            | Yes           |
+| GET    | `/users/:id/followers` | Get user's followers       | No            |
+| GET    | `/users/:id/following` | Get users followed by user | No            |
 
 #### Posts
-- `POST /posts` - Create a new post (auth required)
-  ```json
-  {
-    "text": "Hello world!",
-    "mediaUrl": "https://example.com/image.jpg" // optional
-  }
-  ```
 
-- `GET /posts/:id` - Get a single post
-- `GET /users/:id/posts?offset=0&limit=20` - Get posts by user
-- `GET /feed?offset=0&limit=20` - Get personalized feed (auth required)
-- `GET /posts/upload-url?ext=jpg` - Get signed upload URL for media (auth required)
+| Method | Endpoint                    | Description           | Auth Required |
+| ------ | --------------------------- | --------------------- | ------------- |
+| POST   | `/posts`                    | Create a new post     | Yes           |
+| GET    | `/posts/:id`                | Get a single post     | No            |
+| GET    | `/users/:id/posts`          | Get posts by user     | No            |
+| GET    | `/feed`                     | Get personalized feed | Yes           |
+| GET    | `/posts/upload-url?ext=jpg` | Get signed upload URL | Yes           |
+
+### Request Examples
+
+#### Register
+
+```bash
+POST /api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "handle": "username",
+  "name": "User Name",
+  "password": "password123"
+}
+```
+
+#### Login
+
+```bash
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "emailOrHandle": "user@example.com",
+  "password": "password123"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "user": { ... },
+    "accessToken": "eyJhbGc..."
+  }
+}
+```
+
+#### Create Post
+
+```bash
+POST /api/v1/posts
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "text": "Hello world!",
+  "mediaUrl": "https://..." // optional
+}
+```
+
+#### Media Upload Flow
+
+1. Get signed URL:
+   ```
+   GET /api/v1/posts/upload-url?ext=jpg
+   ```
+2. Upload file to `uploadUrl` using PUT request
+3. Use returned `mediaUrl` when creating post
 
 ### Response Format
 
-**Success Response:**
+**Success:**
+
 ```json
 {
   "success": true,
@@ -200,7 +292,8 @@ Authorization: Bearer <access_token>
 }
 ```
 
-**Paginated Response:**
+**Paginated:**
+
 ```json
 {
   "success": true,
@@ -213,207 +306,227 @@ Authorization: Bearer <access_token>
 }
 ```
 
-**Error Response:**
+**Error:**
+
 ```json
 {
   "code": "ERROR_CODE",
-  "message": "Human readable error message",
-  "details": { ... } // optional
+  "message": "Human readable message",
+  "details": { ... }
 }
-```
-
-### Health Check
-```
-GET /healthz
 ```
 
 ## 🧪 Testing
 
-The project includes unit tests for core services:
+### Run Tests
 
-- **AuthService**: Password hashing, verification, JWT generation, registration, login
-- **UsersService**: Follow/unfollow logic, followers/following lists
-- **PostsService**: Post creation, retrieval, feed generation
-
-Run tests with:
 ```bash
+# Run all tests
 pnpm test
+
+# Run in watch mode
+pnpm test:watch
+
+# Run with coverage
+pnpm test -- --coverage
 ```
 
-Run tests in watch mode:
-```bash
-pnpm test:watch
-```
+### Test Coverage
+
+- Auth Service: Password hashing, JWT generation, register/login flows
+- Users Service: Follow/unfollow logic, followers/following lists
+- Posts Service: Post creation, retrieval, feed generation
+
+## 🔒 Security
+
+- **Password Hashing**: bcrypt with 12 rounds
+- **JWT Tokens**: 15-minute expiration, signed with secret
+- **Rate Limiting**: 100 requests per 15 minutes per IP
+- **Request Validation**: Zod schemas on all endpoints
+- **CORS**: Configured for specific origins
+- **Helmet**: Security headers
+- **Body Limits**: 10MB max request size
+- **SQL Injection**: Protected via Prisma ORM
 
 ## 🚢 Deployment
 
-### Docker Deployment
+### Docker
 
-1. **Build the Docker image**
-   ```bash
-   docker build -t social-media-backend .
-   ```
+```bash
+# Build image
+docker build -t social-media-backend .
 
-2. **Run the container**
-   ```bash
-   docker run -p 8080:8080 --env-file .env social-media-backend
-   ```
+# Run container
+docker run -p 4000:4000 --env-file .env social-media-backend
 
-### AWS EC2 Deployment
+# Or use Docker Compose
+docker-compose up
+```
 
-1. **Setup EC2 instance**
-   - Launch Ubuntu 22.04 instance
-   - Open ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
-   - Install Node.js 18+, pnpm, PM2
+### AWS EC2
 
-2. **Deploy application**
-   ```bash
-   # SSH into instance
-   ssh ubuntu@your-ec2-ip
-   
-   # Clone repository
-   git clone <repository-url>
-   cd social-media-backend
-   
-   # Install dependencies
-   pnpm install
-   
-   # Setup environment
-   cp .env.example .env
-   # Edit .env with production values
-   
-   # Build application
-   pnpm build
-   
-   # Run migrations
-   pnpm prisma:migrate
-   
-   # Start with PM2
-   pm2 start dist/server.js --name social-media-backend
-   pm2 save
-   pm2 startup
-   ```
+```bash
+# Use the deployment script
+chmod +x scripts/deploy-ec2.sh
+./scripts/deploy-ec2.sh ubuntu@your-ec2-ip
 
-3. **Setup Nginx reverse proxy**
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-       
-       location / {
-           proxy_pass http://localhost:8080;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_cache_bypass $http_upgrade;
-       }
-   }
-   ```
+# Or manually:
+# 1. Install Node.js 18+ and pnpm on EC2
+# 2. Clone repository
+# 3. Install dependencies: pnpm install
+# 4. Build: pnpm build
+# 5. Run migrations via Supabase SQL Editor
+# 6. Start with PM2: pm2 start dist/server.js
+```
 
-4. **Setup SSL with Let's Encrypt**
-   ```bash
-   sudo apt install certbot python3-certbot-nginx
-   sudo certbot --nginx -d your-domain.com
-   ```
+### Environment Variables for Production
 
-## 🔒 Security Considerations
+Update `.env` for production:
 
-- Passwords are hashed with bcrypt (12 rounds)
-- JWT tokens expire in 15 minutes
-- Rate limiting: 100 requests per 15 minutes per IP
-- Request validation with Zod schemas
-- Body size limits (10MB)
-- CORS configured for specific origins
-- Helmet.js for security headers
-- SQL injection protection via Prisma ORM
+```env
+NODE_ENV=production
+PORT=8080
+DATABASE_URL=<production-supabase-url>
+JWT_SECRET=<strong-random-secret>
+SUPABASE_URL=<production-supabase-url>
+SUPABASE_SERVICE_ROLE_KEY=<production-key>
+CORS_ORIGIN=https://your-frontend-domain.com
+```
 
-## 🔄 Available Scripts
+## 📝 Available Scripts
 
-- `pnpm dev` - Start development server with hot reload
-- `pnpm build` - Build for production
-- `pnpm start` - Start production server
-- `pnpm test` - Run tests
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm lint` - Run ESLint
-- `pnpm lint:fix` - Fix ESLint issues
-- `pnpm format` - Format code with Prettier
-- `pnpm prisma:generate` - Generate Prisma Client
-- `pnpm prisma:migrate` - Run database migrations
-- `pnpm prisma:studio` - Open Prisma Studio
-- `pnpm prisma:seed` - Seed database with test data
-- `pnpm typecheck` - Run TypeScript type checking
+| Command                | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `pnpm dev`             | Start development server with hot reload |
+| `pnpm build`           | Build for production                     |
+| `pnpm start`           | Start production server                  |
+| `pnpm test`            | Run tests                                |
+| `pnpm lint`            | Run ESLint                               |
+| `pnpm format`          | Format code with Prettier                |
+| `pnpm prisma:generate` | Generate Prisma Client                   |
+| `pnpm prisma:studio`   | Open Prisma Studio                       |
+| `pnpm prisma:seed`     | Seed database with test data             |
+| `pnpm typecheck`       | Run TypeScript type checking             |
 
-## 📝 API Testing
+## 📂 Project Structure
 
-You can test the API using cURL, Postman, or any HTTP client.
+```
+social-media-backend/
+├── src/
+│   ├── config/              # Configuration (env, logger, database)
+│   ├── modules/             # Feature modules
+│   │   ├── auth/           # Authentication
+│   │   ├── users/          # User management
+│   │   └── posts/          # Posts and feed
+│   ├── middleware/          # Express middleware
+│   ├── models/              # TypeScript types
+│   ├── lib/                 # Utilities
+│   ├── routes/              # Route aggregator
+│   └── server.ts            # Express app
+├── prisma/
+│   ├── schema.prisma       # Database schema
+│   ├── seed.ts             # Seed script
+│   └── migrations/         # SQL migrations
+├── tests/                   # Unit tests
+├── scripts/                 # Deployment scripts
+├── .github/workflows/       # CI/CD
+├── postman_collection.json  # API testing
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
 
-### Example: Register and Login
+## 🧩 Architecture Highlights
 
-1. **Register**
-   ```bash
-   curl -X POST http://localhost:8080/api/v1/auth/register \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "test@example.com",
-       "handle": "testuser",
-       "name": "Test User",
-       "password": "password123"
-     }'
-   ```
+### Clean Modular Design
 
-2. **Login**
-   ```bash
-   curl -X POST http://localhost:8080/api/v1/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{
-       "emailOrHandle": "test@example.com",
-       "password": "password123"
-     }'
-   ```
+- Each feature module (auth, users, posts) contains:
+  - Service layer (business logic)
+  - Controller layer (request handling)
+  - Routes (endpoint definitions)
+  - Validation schemas (Zod)
 
-3. **Create Post** (use token from login)
-   ```bash
-   curl -X POST http://localhost:8080/api/v1/posts \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <your-token>" \
-     -d '{
-       "text": "My first post!"
-     }'
-   ```
+### Error Handling
 
-## 🐛 Known Limitations
+- Centralized error handler
+- Custom `HttpError` class
+- Consistent error responses
+- Detailed logging
 
-- No refresh token mechanism (tokens expire in 15m)
-- Offset pagination can be slow for large datasets
-- Feed generation not optimized for scale
-- No real-time updates (WebSocket/SSE)
-- No post editing or deletion
-- No likes/comments functionality
-- No user profile images
-- Media upload requires Supabase configuration
+### Middleware Stack
 
-## 📚 Future Improvements
+- Request logging with unique IDs
+- JWT authentication
+- Zod validation
+- Rate limiting
+- CORS & security headers
 
-- Add refresh token mechanism
-- Implement cursor-based pagination
-- Add caching layer (Redis)
-- Implement WebSocket for real-time updates
-- Add post editing and deletion
-- Add likes and comments
-- Add user profile images
-- Add notifications system
-- Add search functionality
-- Add analytics and monitoring
-- Add CI/CD pipeline
-- Add integration tests
-- Add API documentation with Swagger
+## 🐛 Troubleshooting
+
+### Database Connection Issues
+
+- Ensure you're using the **session pooler** URL with `?pgbouncer=true`
+- For migrations, use Supabase SQL Editor (direct connection needs IPv6)
+
+### bcrypt Module Errors
+
+```bash
+cd node_modules/.pnpm/bcrypt@5.1.1/node_modules/bcrypt && npm run install
+```
+
+### Port Already in Use
+
+Change `PORT` in `.env` to an available port (e.g., 4000, 5000)
+
+### Supabase Upload Errors
+
+- Use `SUPABASE_SERVICE_ROLE_KEY` (not anon key)
+- Verify bucket name matches `SUPABASE_BUCKET` in `.env`
+- Ensure bucket is set to public in Supabase Dashboard
+
+## 📊 API Testing
+
+Import `postman_collection.json` into Postman for pre-configured requests with examples.
+
+**Quick Test:**
+
+```bash
+# Login
+curl -X POST http://localhost:4000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"emailOrHandle":"alice@example.com","password":"password123"}'
+
+# Use returned token for authenticated requests
+```
+
+## 🎯 Assignment Requirements Checklist
+
+- ✅ TypeScript with strict mode
+- ✅ Express.js REST API with versioning (`/api/v1`)
+- ✅ PostgreSQL 15 with Prisma ORM
+- ✅ Supabase for database and storage
+- ✅ JWT authentication (access token only)
+- ✅ User registration and login
+- ✅ Follow/unfollow functionality
+- ✅ Followers and following lists with pagination
+- ✅ Create posts with optional media
+- ✅ Retrieve user posts
+- ✅ Personalized feed
+- ✅ Security (helmet, CORS, rate limiting, Zod validation)
+- ✅ Unit tests with Jest
+- ✅ ESLint + Prettier
+- ✅ pnpm package manager
+- ✅ Clean architecture and data modeling
+- ✅ Comprehensive documentation
+- ✅ Postman collection
+- ✅ Docker support
+- ✅ CI/CD pipeline
+- ✅ Deployment ready (EC2 scripts)
 
 ## 📄 License
 
 MIT
 
-## 👥 Author
+## 👤 Author
 
-Backend Engineer Assignment
-
+Backend Engineer Assignment - Social Media API

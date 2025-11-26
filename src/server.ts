@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(
   pinoHttp({
     logger,
-    customLogLevel: (req, res, err) => {
+    customLogLevel: (_req, res, err) => {
       if (res.statusCode >= 400 && res.statusCode < 500) {
         return 'warn';
       } else if (res.statusCode >= 500 || err) {
@@ -49,11 +49,14 @@ app.use(
       }
       return 'info';
     },
-    customSuccessMessage: (req, res) => {
-      return `${req.method} ${req.url} ${res.statusCode}`;
+    customSuccessMessage: (_req, res) => {
+      if (res.statusCode >= 400) {
+        return 'Request failed';
+      }
+      return 'Request completed';
     },
-    customErrorMessage: (req, res, err) => {
-      return `${req.method} ${req.url} ${res.statusCode} - ${err.message}`;
+    customErrorMessage: (_req, _res, err) => {
+      return err.message;
     },
   })
 );

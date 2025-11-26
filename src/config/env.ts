@@ -10,7 +10,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string(),
   JWT_TTL: z.string().default('15m'),
   SUPABASE_URL: z.string().optional(),
-  SUPABASE_ANON_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_BUCKET: z.string().default('media'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
 });

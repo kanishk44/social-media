@@ -1,17 +1,32 @@
 {
   "info": {
     "name": "Social Media Backend API",
-    "description": "API collection for the social media backend",
+    "description": "Complete API collection for testing the social media backend with authentication, posts, follows, and media uploads.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:8080/api/v1",
+      "value": "http://localhost:4000/api/v1",
       "type": "string"
     },
     {
       "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upload_url",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "media_url",
       "value": "",
       "type": "string"
     }
@@ -30,6 +45,11 @@
                   "if (pm.response.code === 201) {",
                   "    const response = pm.response.json();",
                   "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('user_id', response.data.user.id);",
+                  "    pm.test('Registration successful', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.accessToken).to.be.a('string');",
+                  "    });",
                   "}"
                 ]
               }
@@ -45,13 +65,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"test@example.com\",\n  \"handle\": \"testuser\",\n  \"name\": \"Test User\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"handle\": \"newuser\",\n  \"name\": \"New User\",\n  \"password\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
               "host": ["{{base_url}}"],
               "path": ["auth", "register"]
-            }
+            },
+            "description": "Register a new user account"
           }
         },
         {
@@ -64,6 +85,11 @@
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
                   "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('user_id', response.data.user.id);",
+                  "    pm.test('Login successful', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.accessToken).to.be.a('string');",
+                  "    });",
                   "}"
                 ]
               }
@@ -79,22 +105,24 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"emailOrHandle\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"emailOrHandle\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
-            }
+            },
+            "description": "Login with email/handle and password. Token is automatically saved for subsequent requests."
           }
         }
-      ]
+      ],
+      "description": "Authentication endpoints for user registration and login"
     },
     {
       "name": "Users",
       "item": [
         {
-          "name": "Get User",
+          "name": "Get User Profile",
           "request": {
             "method": "GET",
             "header": [],
@@ -105,10 +133,12 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_here"
+                  "value": "{{user_id}}",
+                  "description": "User ID to fetch"
                 }
               ]
-            }
+            },
+            "description": "Get public profile information for any user"
           }
         },
         {
@@ -128,10 +158,12 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_to_follow"
+                  "value": "",
+                  "description": "ID of user to follow"
                 }
               ]
-            }
+            },
+            "description": "Follow another user (authentication required)"
           }
         },
         {
@@ -151,10 +183,12 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_to_unfollow"
+                  "value": "",
+                  "description": "ID of user to unfollow"
                 }
               ]
-            }
+            },
+            "description": "Unfollow a user (authentication required)"
           }
         },
         {
@@ -169,20 +203,24 @@
               "query": [
                 {
                   "key": "offset",
-                  "value": "0"
+                  "value": "0",
+                  "description": "Pagination offset"
                 },
                 {
                   "key": "limit",
-                  "value": "20"
+                  "value": "20",
+                  "description": "Number of items (max 100)"
                 }
               ],
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_here"
+                  "value": "{{user_id}}",
+                  "description": "User ID"
                 }
               ]
-            }
+            },
+            "description": "Get paginated list of user's followers"
           }
         },
         {
@@ -197,29 +235,34 @@
               "query": [
                 {
                   "key": "offset",
-                  "value": "0"
+                  "value": "0",
+                  "description": "Pagination offset"
                 },
                 {
                   "key": "limit",
-                  "value": "20"
+                  "value": "20",
+                  "description": "Number of items (max 100)"
                 }
               ],
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_here"
+                  "value": "{{user_id}}",
+                  "description": "User ID"
                 }
               ]
-            }
+            },
+            "description": "Get paginated list of users that this user follows"
           }
         }
-      ]
+      ],
+      "description": "User profile and social graph endpoints"
     },
     {
       "name": "Posts",
       "item": [
         {
-          "name": "Create Post",
+          "name": "Create Post (Text Only)",
           "request": {
             "method": "POST",
             "header": [
@@ -234,13 +277,40 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"text\": \"This is my first post!\",\n  \"mediaUrl\": \"https://example.com/image.jpg\"\n}"
+              "raw": "{\n  \"text\": \"This is my first post! 🚀\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/posts",
               "host": ["{{base_url}}"],
               "path": ["posts"]
-            }
+            },
+            "description": "Create a text-only post (authentication required)"
+          }
+        },
+        {
+          "name": "Create Post (With Media)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Check out this amazing photo!\",\n  \"mediaUrl\": \"https://your-supabase-project.supabase.co/storage/v1/object/public/media/...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            },
+            "description": "Create a post with media URL (get URL from upload endpoint first)"
           }
         },
         {
@@ -255,10 +325,12 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "post_id_here"
+                  "value": "",
+                  "description": "Post ID"
                 }
               ]
-            }
+            },
+            "description": "Get a single post by ID"
           }
         },
         {
@@ -283,14 +355,16 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "user_id_here"
+                  "value": "{{user_id}}",
+                  "description": "User ID"
                 }
               ]
-            }
+            },
+            "description": "Get paginated list of posts by a specific user"
           }
         },
         {
-          "name": "Get Feed",
+          "name": "Get Personalized Feed",
           "request": {
             "method": "GET",
             "header": [
@@ -306,18 +380,39 @@
               "query": [
                 {
                   "key": "offset",
-                  "value": "0"
+                  "value": "0",
+                  "description": "Pagination offset"
                 },
                 {
                   "key": "limit",
-                  "value": "20"
+                  "value": "20",
+                  "description": "Number of posts (max 100)"
                 }
               ]
-            }
+            },
+            "description": "Get personalized feed (your posts + posts from users you follow)"
           }
         },
         {
           "name": "Get Upload URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('upload_url', response.data.uploadUrl);",
+                  "    pm.collectionVariables.set('media_url', response.data.mediaUrl);",
+                  "    console.log('✅ Upload URL saved to collection variable');",
+                  "    console.log('📤 Next: Use \"Upload File to Supabase\" request');",
+                  "    console.log('Upload URL:', response.data.uploadUrl);",
+                  "    console.log('Media URL:', response.data.mediaUrl);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [
@@ -337,10 +432,40 @@
                   "description": "File extension: png, jpg, jpeg, gif, or mp4"
                 }
               ]
-            }
+            },
+            "description": "STEP 1: Get signed upload URL from backend. The uploadUrl is automatically saved to collection variables for the next step."
+          }
+        },
+        {
+          "name": "Upload File to Supabase",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "image/jpeg",
+                "description": "Change based on file type: image/png, image/gif, video/mp4"
+              },
+              {
+                "key": "x-upsert",
+                "value": "false"
+              }
+            ],
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": ""
+              }
+            },
+            "url": {
+              "raw": "{{upload_url}}",
+              "host": ["{{upload_url}}"]
+            },
+            "description": "STEP 2: Upload your actual file to Supabase Storage.\n\n1. In Body tab, select 'Binary'\n2. Click 'Select File' and choose an image\n3. Send request\n4. You should get 200 OK\n\nThe uploadUrl is automatically populated from the previous request."
           }
         }
-      ]
+      ],
+      "description": "Post creation, retrieval, and feed endpoints"
     },
     {
       "name": "Health Check",
@@ -348,14 +473,30 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/healthz",
+          "raw": "http://localhost:4000/healthz",
           "protocol": "http",
           "host": ["localhost"],
-          "port": "8080",
+          "port": "4000",
           "path": ["healthz"]
-        }
+        },
+        "description": "Check if the server is running"
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
       }
     }
   ]
 }
-
