@@ -333,9 +333,54 @@ pnpm test:coverage
 
 ### Test Coverage
 
-- Auth Service: Password hashing, JWT generation, register/login flows
-- Users Service: Follow/unfollow logic, followers/following lists
-- Posts Service: Post creation, retrieval, feed generation
+**31 test cases covering:**
+
+#### Auth Service (10 tests)
+
+- ✅ Password hashing functionality
+- ✅ Password verification (correct password)
+- ✅ Password verification (incorrect password)
+- ✅ JWT token generation
+- ✅ User registration with valid data
+- ✅ Registration error - duplicate email
+- ✅ Registration error - duplicate handle
+- ✅ Login with valid credentials
+- ✅ Login error - user not found
+- ✅ Login error - incorrect password
+
+#### Users Service (12 tests)
+
+- ✅ Get user by ID
+- ✅ Get user error - user not found
+- ✅ Follow a user successfully
+- ✅ Follow error - cannot follow yourself
+- ✅ Follow error - target user not found
+- ✅ Follow error - already following
+- ✅ Unfollow a user successfully
+- ✅ Unfollow error - cannot unfollow yourself
+- ✅ Unfollow error - not currently following
+- ✅ Get paginated followers list
+- ✅ Get followers error - user not found
+- ✅ Get paginated following list
+- ✅ Get following error - user not found
+
+#### Posts Service (9 tests)
+
+- ✅ Create post without media
+- ✅ Create post with media
+- ✅ Get post by ID
+- ✅ Get post error - post not found
+- ✅ Get paginated user posts
+- ✅ Get user posts error - user not found
+- ✅ Get personalized feed (user + following)
+- ✅ Get feed when not following anyone
+
+**Coverage Report:**
+
+```bash
+pnpm test:coverage
+# Shows line, branch, function, and statement coverage
+```
 
 ## 🔒 Security
 
